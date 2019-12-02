@@ -1,5 +1,4 @@
 module drawer (
-	input frame,
 	input clk,
 	input rst,
 	input [8:0] x,
@@ -8,9 +7,6 @@ module drawer (
 	output wire w_en,
 	output [7:0] dbg
 );
-
-logic [8:0] counter_next;
-logic [8:0] counter_reg;
 
 logic [15:0] data_next;
 reg [15:0] data_reg;
@@ -24,32 +20,23 @@ logic ready_to_draw;
 assign dq = write_reg ? data_reg : 16'hzzzz;
 assign w_en = ~write_reg;
 
+
+wire new_draw;
+assign new_draw = y == 0;
+
+reg [6:0] frame_counter;
+wire new_frame = frame_counter == 0;
+
+always @(posedge new_draw) begin
+	frame_counter <= frame_counter + 1;
+	if(frame_counter >= 60)
+		frame_counter <= 0;
+end
+
 always @* begin
-	if(frame) begin
-		ready_to_draw = 1;
-	end 
-	
-	if(y == 0 && ready_to_draw) begin
-		ready_to_draw = 0;
-		drawing = 1;
-	end 
-	
-	if(drawing) begin
-		write_next = 1;
-		if(x == counter_reg) begin
-			data_next = 16'hf800;
-		end else begin
-			data_next = 16'h0000;
-		end
-			
-		if(y == 0 || y == 239 || x == 0 || x == 319) 
-			data_next = 16'hff0f;
-			
-		if(y >= 239)
-			drawing = 0;
-	end else begin 
-		write_next = 0;
-	end 
+	data_next = 0;
+	if(x == 10) 
+		data_next = 16'hffff;
 end 
 
 always @(posedge clk, posedge rst) begin
@@ -58,7 +45,11 @@ always @(posedge clk, posedge rst) begin
 		write_reg <= 0;
 	end else begin
 		data_reg <= data_next;
-		write_reg <= write_next;
+		
+		if(new_frame)
+			write_reg <= 1;
+		else
+			write_reg <= 0;
 	end
 end 
 

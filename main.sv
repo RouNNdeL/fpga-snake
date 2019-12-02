@@ -42,8 +42,6 @@ VGA_PLL	p0 (
 
 assign reset = SW[0];
 
-reset_delay			r0	(	.iCLK(CLOCK_50), .oRESET(DLY_RST)	);
-
 VGA_Controller		u1	(	//	Host Side
 							.iCursor_RGB_EN(4'b0111),
 							.oCoord_X(Coord_X),
@@ -61,19 +59,12 @@ VGA_Controller		u1	(	//	Host Side
 							.oVGA_BLANK(VGA_BLANK),
 							//	Control Signal
 							.iCLK(VGA_CTRL_CLK),
-							.iRST_N(DLY_RST ^ reset)	);
+							.iRST_N(~reset)	);
 							
 assign SRAM_ADDR = {Coord_X[9:1],Coord_Y[9:1]} ;
 
-wire f;
-wire [7:0] DEBUG;
-frame_gen f0 (.clk(CLOCK_50), .frame(f));
-
-wire step_frame = (f & SW[1]) ^ ~KEY[0];
-
 drawer d0 (
 	.clk(VGA_CTRL_CLK), 
-	.frame(step_frame), 
 	.x(Coord_X[9:1]), 
 	.y(Coord_Y[9:1]), 
 	.rst(reset), 
