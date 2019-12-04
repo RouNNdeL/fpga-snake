@@ -38,16 +38,16 @@ assign dbg = {mov[3], 2'b0, mov_dir};
 
 always @(posedge mov[0], posedge mov[1], posedge mov[2], posedge mov[3], posedge rst) begin
 	if(rst)
-		mov_dir = 2'b00;
+		mov_dir <= 2'b00;
 	else begin
 		if(mov[0])
-			mov_dir = 2'b00;
+			mov_dir <= 2'b00;
 		if(mov[1])
-			mov_dir = 2'b01;
+			mov_dir <= 2'b01;
 		if(mov[2])
-			mov_dir = 2'b10;
+			mov_dir <= 2'b10;
 		if(mov[3])
-			mov_dir = 2'b11;
+			mov_dir <= 2'b11;
 		end
 end
 
@@ -99,17 +99,17 @@ always @* begin
 				data_next = 16'h7c00;
 		end 
 	end else begin
-			if(gridX == 0)
-				data_next = 16'hffff;
-			if(gridY == 0 && gridX < 30)
-				data_next = 16'hffff;
-			if(gridX == 29)
-				data_next = 16'hffff;
-			if(gridY == 29 && gridX < 30)
-				data_next = 16'hffff;
+		if(gridX == 0)
+			data_next = 16'hffff;
+		if(gridY == 0 && gridX < 30)
+			data_next = 16'hffff;
+		if(gridX == 29)
+			data_next = 16'hffff;
+		if(gridY == 29 && gridX < 30)
+			data_next = 16'hffff;
 			
-			if(gridX == playerX && gridY == playerY)
-				data_next = 16'h7c00;
+		if(gridX == playerX && gridY == playerY)
+			data_next = 16'h7c00;
 	end
 end 
 
