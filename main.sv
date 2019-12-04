@@ -64,7 +64,7 @@ VGA_Controller		u1	(	//	Host Side
 assign SRAM_ADDR = {Coord_X[9:1],Coord_Y[9:1]} ;
 
 drawer d0 (
-	.clk(VGA_CTRL_CLK), 
+	.clk(VGA_CLK), 
 	.x(Coord_X[9:1]), 
 	.y(Coord_Y[9:1]), 
 	.rst(reset), 
@@ -80,8 +80,8 @@ assign SRAM_LB_N = 0;
 assign SRAM_CE_N = 0;
 assign SRAM_OE_N = 0;	
 
-assign  mVGA_R = {SRAM_DQ[15:12], SRAM_DQ[11] ? 6'b111111 : 6'b0};
-assign  mVGA_G = {SRAM_DQ[10:7], SRAM_DQ[6] ? 6'b111111 : 6'b0};
-assign  mVGA_B = {SRAM_DQ[5:2], SRAM_DQ[1] ? 6'b111111 : 6'b0};
+assign  mVGA_R = {SRAM_DQ[14:11], SRAM_DQ[10] ? 6'b111111 : 6'b0};
+assign  mVGA_G = {SRAM_DQ[9:6], SRAM_DQ[5] ? 6'b111111 : 6'b0};
+assign  mVGA_B = {SRAM_DQ[4:1], SRAM_DQ[0] ? 6'b111111 : 6'b0};
 	
 endmodule

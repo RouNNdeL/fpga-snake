@@ -35,7 +35,15 @@ end
 
 always @* begin
 	data_next = 0;
-	if(x == 10) 
+	
+	if(x == 0)
+		data_next = 16'hffff;
+	if(y == 0)
+		data_next = 16'hffff;
+		
+	if(x == 319)
+		data_next = 16'hffff;
+	if(y == 239)
 		data_next = 16'hffff;
 end 
 
