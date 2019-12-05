@@ -41,13 +41,13 @@ module main(
 assign reset = SW[0];
 assign resetVGA = SW[1];
 
-wire clk_sdram_100;
+wire clk_sdram_166;
 sdram_pll sdram_pll_inst (
 	.inclk0 (CLOCK_50),
-	.c0 (clk_sdram_100)
+	.c0 (clk_sdram_166)
 );
 
-assign DRAM_CLK = clk_sdram_100;
+assign DRAM_CLK = clk_sdram_166;
 
 wire [11:0] sdram_w_addr;
 wire sdram_w_enable;
@@ -73,7 +73,7 @@ sdram_controller sdram0(
 	
 	.busy(sdram_busy),
 	.rst_n(~reset),
-	.clk(clk_sdram_100),
+	.clk(clk_sdram_166),
 	
 	/* SDRAM SIDE - PINOUT */
 	.addr(DRAM_ADDR),
