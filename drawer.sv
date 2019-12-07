@@ -18,11 +18,10 @@ reg write_reg;
 assign dq = write_reg ? data_reg : 16'hzzzz;
 assign w_en = ~write_reg;
 
-wire new_draw;
-assign new_draw = y == 0;
+assign new_draw_clk60 = y == 0;
 
 reg [6:0] frame_counter;
-wire new_frame = frame_counter == 0;
+wire new_frame_clk1 = frame_counter == 0;
 
 wire [5:0] gridX = x[8:3];
 wire [5:0] gridY = y[8:3];
@@ -36,7 +35,7 @@ assign dbg = {mov[3], 2'b0, mov_dir};
 
 //TODO: The (0, 0) pixel is black and blinks on frame refresh, findout why and fix
 
-always @(posedge mov[0], posedge mov[1], posedge mov[2], posedge mov[3], posedge rst) begin
+always @(posedge clk, posedge rst) begin
 	if(rst)
 		mov_dir <= 2'b00;
 	else begin
@@ -51,7 +50,7 @@ always @(posedge mov[0], posedge mov[1], posedge mov[2], posedge mov[3], posedge
 		end
 end
 
-always @(posedge new_frame, posedge rst) begin
+always @(posedge new_frame_clk1, posedge rst) begin
 	if(rst) begin 
 		playerX <= 15;
 		playerY <= 15;
@@ -59,10 +58,10 @@ always @(posedge new_frame, posedge rst) begin
 		dead_frame <= 0;
 	end else begin
 		case(mov_dir) 
-			2'b00: playerX = playerX + 1; // Right
-			2'b01: playerY = playerY + 1; // Down
-			2'b10: playerX = playerX - 1; // Left
-			2'b11: playerY = playerY - 1; // Up
+			2'b00: playerX <= playerX + 1; // Right
+			2'b01: playerY <= playerY + 1; // Down
+			2'b10: playerX <= playerX - 1; // Left
+			2'b11: playerY <= playerY - 1; // Up
 		endcase
 		
 		if(playerX == 0 || playerX == 29)
@@ -113,7 +112,7 @@ always @* begin
 	end
 end 
 
-always @(posedge new_draw) begin
+always @(posedge new_draw_clk60) begin
 	frame_counter <= frame_counter + 1;
 		if(frame_counter >= 60)
 			frame_counter <= 0;
@@ -126,7 +125,7 @@ always @(posedge clk, posedge rst) begin
 	end else begin
 		data_reg <= data_next;
 		
-		if(new_frame)
+		if(new_frame_clk1)
 			write_reg <= 1;
 		else
 			write_reg <= 0;
