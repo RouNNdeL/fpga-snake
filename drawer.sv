@@ -4,19 +4,14 @@ module drawer (
 	input [3:0] mov,
 	input [8:0] x,
 	input [8:0] y,
-	output wire [15:0] dq,
-	output wire w_en,
+	output wire [15:0] pixel_data,
 	output [7:0] dbg
 );
 
 logic [15:0] data_next;
 reg [15:0] data_reg;
 
-logic write_next;
-reg write_reg;
-
-assign dq = write_reg ? data_reg : 16'hzzzz;
-assign w_en = ~write_reg;
+assign pixel_data = data_reg;
 
 assign new_draw_clk60 = y == 0;
 
@@ -108,27 +103,21 @@ always @* begin
 			data_next = 16'hffff;
 			
 		if(gridX == playerX && gridY == playerY)
-			data_next = 16'h7c00;
+			data_next = 16'hde2;
 	end
 end 
 
 always @(posedge new_draw_clk60) begin
 	frame_counter <= frame_counter + 1;
-		if(frame_counter >= 60)
+		if(frame_counter >= 120)
 			frame_counter <= 0;
 end
 
 always @(posedge clk, posedge rst) begin
 	if(rst) begin
 		data_reg <= 0;
-		write_reg <= 0;
 	end else begin
 		data_reg <= data_next;
-		
-		if(new_frame_clk1)
-			write_reg <= 1;
-		else
-			write_reg <= 0;
 	end
 end 
 

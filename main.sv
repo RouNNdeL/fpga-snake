@@ -131,6 +131,7 @@ VGA_Controller		u1	(	//	Host Side
 							.iRST_N(~resetVGA)	);
 
 wire [7:0] debug;
+wire [15:0] pixel_buffer;
 
 drawer d0 (
 	.clk(vga_clk_252), 
@@ -138,8 +139,7 @@ drawer d0 (
 	.y(Coord_Y[9:1]), 
 	.mov(~KEY),
 	.rst(reset), 
-	.dq(SRAM_DQ),
-	.w_en(SRAM_WE_N),
+	.pixel_data(pixel_buffer),
 	.dbg(debug)
 );
 
@@ -150,10 +150,10 @@ assign SRAM_LB_N = 0;
 assign SRAM_CE_N = 0;
 assign SRAM_OE_N = 0;
 
-assign SRAM_ADDR = {Coord_X[9:1],Coord_Y[9:1]} ;
+assign SRAM_WE_N = 1;
 
-assign  mVGA_R = {SRAM_DQ[14:11], SRAM_DQ[10] ? 6'b111111 : 6'b0};
-assign  mVGA_G = {SRAM_DQ[9:6], SRAM_DQ[5] ? 6'b111111 : 6'b0};
-assign  mVGA_B = {SRAM_DQ[4:1], SRAM_DQ[0] ? 6'b111111 : 6'b0};
-	
+assign  mVGA_R = {pixel_buffer[14:11], pixel_buffer[10] ? 6'b111111 : 6'b0};
+assign  mVGA_G = {pixel_buffer[9:6], pixel_buffer[5] ? 6'b111111 : 6'b0};
+assign  mVGA_B = {pixel_buffer[4:1], pixel_buffer[0] ? 6'b111111 : 6'b0};
+
 endmodule
