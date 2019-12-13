@@ -5,6 +5,7 @@ module snake_controller(
 	input rst,
 	input [5:0] x,
 	input [5:0] y,
+	input [1:0] mov_dir,
 	inout [15:0] sram_dq, 
 	output [17:0] sram_addr,
 	output write_enable,
@@ -31,17 +32,19 @@ assign sram_dq = write_reg ? sram_buffer_reg : 16'hzzzz;
 assign sram_addr = {x, y};
 assign entity_data = entity_reg;
 
-wire [1:0] state_next;
-reg [1:0] state_reg;
+wire [3:0] state_next;
+reg [3:0] state_reg;
 
 reg eval_reg;
 
 wire [15:0] sram_buffer_next;
 reg [15:0] sram_buffer_reg;
 
-parameter STATE_READ = 2'b01;
-parameter STATE_WRITE = 2'b10;
-parameter STATE_NOP = 2'b11;
+parameter STATE_READ = 3'b000;
+parameter STATE_READ2 = 3'b001;
+parameter STATE_WRITE = 3'b010;
+parameter STATE_WRITE2 = 3'b011;
+parameter STATE_NOP = 3'b100;
 
 parameter BORDER_VALUE = 16'hffff;
 
@@ -53,7 +56,12 @@ always @(posedge clk_1, posedge rst) begin
 			player_y <= 3;
 			player_length <= 1;
 	end else begin
-		player_x <= player_x + 1;
+		case(mov_dir) 
+			2'b00: player_x <= player_x + 1; // Right
+			2'b01: player_y <= player_y + 1; // Down
+			2'b10: player_x <= player_x - 1; // Left
+			2'b11: player_y <= player_y - 1; // Up
+		endcase
 		player_length <= player_length + 1;
 	end
 end 
@@ -71,7 +79,7 @@ always @(posedge clk_25_2, posedge rst) begin
 		if(y == 29 && x < 30)
 			sram_buffer_reg <= BORDER_VALUE;
 	end else begin
-		if(clk_1) begin
+		if(1 || clk_1) begin
 			eval_reg <= 1;
 		end else 
 			eval_reg <= 0;
@@ -108,9 +116,20 @@ always @* begin
 					sram_buffer_next = 1;
 				end 
 					
+				state_next = STATE_WRITE2;
+			end
+			STATE_WRITE2: begin
+				entity_next = entity_reg;
+				sram_buffer_next = sram_buffer_reg;
+				write_next = 1;
 				state_next = STATE_NOP;
 			end
-			STATE_NOP: state_next = STATE_NOP;
+			STATE_NOP: begin
+				if(sram_buffer_reg > 0 && sram_buffer_reg != BORDER_VALUE)
+					entity_next = 16'hde2;
+				if(sram_buffer_reg == BORDER_VALUE)
+					entity_next = 16'hffff;
+			end
 		endcase
 	end else begin
 		sram_buffer_next = sram_dq;

@@ -20,7 +20,7 @@ reg [15:0] data_reg;
 assign pixel_data = data_reg;
 
 assign new_draw_clk60 = y == 100;
-assign new_grid_clk = x[2:0] == 1;
+assign new_grid_clk = y[2:0] == 1 && x[2:0] == 1;
 
 reg [7:0] frame_counter;
 wire new_frame_clk1 = frame_counter == 0;
@@ -44,6 +44,7 @@ snake_controller sc0(
 	.rst(rst_snake),
 	.x(gridX),
 	.y(gridY),
+	.mov_dir(mov_dir),
 	.sram_dq(sram_dq), 
 	.sram_addr(sram_addr),
 	.write_enable(sram_we_n),
@@ -116,7 +117,7 @@ end
 
 always @(posedge new_draw_clk60) begin
 	frame_counter <= frame_counter + 1;
-		if(frame_counter >= 240)
+		if(frame_counter >= 30)
 			frame_counter <= 0;
 end
 
