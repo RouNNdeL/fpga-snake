@@ -34,6 +34,7 @@ reg [4:0] playerY;
 reg dead;
 reg dead_frame;
 reg [1:0] mov_dir;
+reg [1:0] last_mov_dir;
 
 assign dbg = {new_frame_clk1, frame_counter};
 
@@ -78,13 +79,13 @@ always @(posedge clk, posedge rst) begin
 		mov_dir <= 2'b00;
 		pixel_reg <= 0;
 	end else begin
-		if(mov[0] & mov_dir != 2'b10)
+		if(mov[0] & last_mov_dir != 2'b10)
 			mov_dir <= 2'b00;
-		if(mov[1] & mov_dir != 2'b11)
+		if(mov[1] & last_mov_dir != 2'b11)
 			mov_dir <= 2'b01;
-		if(mov[2] & mov_dir != 2'b00)
+		if(mov[2] & last_mov_dir != 2'b00)
 			mov_dir <= 2'b10;
-		if(mov[3] & mov_dir != 2'b01)
+		if(mov[3] & last_mov_dir != 2'b01)
 			mov_dir <= 2'b11;
 			
 		pixel_reg <= pixel_next;
@@ -104,6 +105,7 @@ always @(posedge new_frame_clk1, posedge rst) begin
 		dead <= 0;
 		dead_frame <= 0;
 	end else begin
+		last_mov_dir <= mov_dir;
 		case(mov_dir) 
 			2'b00: playerX <= playerX + 1; // Right
 			2'b01: playerY <= playerY + 1; // Down
