@@ -70,7 +70,8 @@ wire [15:0] pixel_buffer;
 drawer d0 (
 	.clk(vga_clk_252), 
 	.x(Coord_X[9:1]), 
-	.y(Coord_Y[9:1]), 
+	.y(Coord_Y[9:1]),
+	.clk_vsync(VGA_VS),
 	.mov(~KEY),
 	.rst(reset), 
 	.rst_snake(SW[2]),

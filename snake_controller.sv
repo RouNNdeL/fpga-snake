@@ -54,7 +54,7 @@ always @(posedge clk_1, posedge rst) begin
 	if(rst) begin
 			player_x <= 3;
 			player_y <= 3;
-			player_length <= 1;
+			player_length <= 20;
 	end else begin
 		case(mov_dir) 
 			2'b00: player_x <= player_x + 1; // Right
@@ -62,7 +62,7 @@ always @(posedge clk_1, posedge rst) begin
 			2'b10: player_x <= player_x - 1; // Left
 			2'b11: player_y <= player_y - 1; // Up
 		endcase
-		player_length <= player_length + 1;
+		//player_length <= player_length + 1;
 	end
 end 
 	
@@ -79,7 +79,7 @@ always @(posedge clk_25_2, posedge rst) begin
 		if(y == 29 && x < 30)
 			sram_buffer_reg <= BORDER_VALUE;
 	end else begin
-		if(1 || clk_1) begin
+		if(clk_1) begin
 			eval_reg <= 1;
 		end else 
 			eval_reg <= 0;
@@ -97,7 +97,7 @@ always @* begin
 	state_next = state_reg;
 	sram_buffer_next = sram_dq;
 	write_next = 0;
-	entity_next = 0;
+	entity_next = entity_reg;
 	
 	if (eval_reg) begin
 		case(state_reg) 
@@ -110,11 +110,14 @@ always @* begin
 					write_next = 1;
 					sram_buffer_next = (sram_buffer_reg + 1) % (player_length + 1);
 				end 
-				if(sram_buffer_reg == 0 && x == player_x && y == player_y) begin
+				else if(sram_buffer_reg == 0 && x == player_x && y == player_y) begin
 					entity_next = 16'hde2;
 					write_next = 1;
 					sram_buffer_next = 1;
 				end 
+				else begin
+					entity_next = 0;
+				end
 					
 				state_next = STATE_WRITE2;
 			end
@@ -127,16 +130,22 @@ always @* begin
 			STATE_NOP: begin
 				if(sram_buffer_reg > 0 && sram_buffer_reg != BORDER_VALUE)
 					entity_next = 16'hde2;
-				if(sram_buffer_reg == BORDER_VALUE)
+				else if(sram_buffer_reg == BORDER_VALUE)
 					entity_next = 16'hffff;
+				else begin
+					entity_next = 0;
+				end
 			end
 		endcase
 	end else begin
 		sram_buffer_next = sram_dq;
 		if(sram_buffer_reg > 0 && sram_buffer_reg != BORDER_VALUE)
 			entity_next = 16'hde2;
-		if(sram_buffer_reg == BORDER_VALUE)
+		else if(sram_buffer_reg == BORDER_VALUE)
 			entity_next = 16'hffff;
+		else begin
+			entity_next = 0;
+		end
 	end 
 end
 
