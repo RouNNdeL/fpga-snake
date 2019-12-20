@@ -78,13 +78,13 @@ always @(posedge clk, posedge rst) begin
 		mov_dir <= 2'b00;
 		pixel_reg <= 0;
 	end else begin
-		if(mov[0])
+		if(mov[0] & mov_dir != 2'b10)
 			mov_dir <= 2'b00;
-		if(mov[1])
+		if(mov[1] & mov_dir != 2'b11)
 			mov_dir <= 2'b01;
-		if(mov[2])
+		if(mov[2] & mov_dir != 2'b00)
 			mov_dir <= 2'b10;
-		if(mov[3])
+		if(mov[3] & mov_dir != 2'b01)
 			mov_dir <= 2'b11;
 			
 		pixel_reg <= pixel_next;

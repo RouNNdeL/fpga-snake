@@ -54,7 +54,7 @@ always @(posedge clk_1, posedge rst) begin
 	if(rst) begin
 			player_x <= 3;
 			player_y <= 3;
-			player_length <= 20;
+			player_length <= 40;
 	end else begin
 		case(mov_dir) 
 			2'b00: player_x <= player_x + 1; // Right
