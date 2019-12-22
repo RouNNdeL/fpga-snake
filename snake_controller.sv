@@ -72,12 +72,8 @@ always @(posedge clk_1, posedge rst) begin
 			objective_y <= objective_y + 4;
 		end
 		
-		case(mov_dir) 
-			2'b00: player_x <= player_x + 1; // Right
-			2'b01: player_y <= player_y + 1; // Down
-			2'b10: player_x <= player_x - 1; // Left
-			2'b11: player_y <= player_y - 1; // Up
-		endcase
+		player_x <= next_x;
+		player_y <= next_y;
 		//player_length <= player_length + 1;
 	end
 end 
@@ -112,6 +108,9 @@ always @(posedge clk_25_2, posedge rst) begin
 	end
 end
 
+wire [4:0] next_x;
+wire [4:0] next_y;
+
 always @* begin
 	state_next = state_reg;
 	sram_buffer_next = sram_dq;
@@ -119,22 +118,34 @@ always @* begin
 	entity_next = entity_reg;
 	game_state_next = game_state_reg;
 	
+	next_x = player_x;
+	next_y = player_y;
+	
+	case(mov_dir) 
+		2'b00: next_x = player_x + 1; // Right
+		2'b01: next_y = player_y + 1; // Down
+		2'b10: next_x = player_x - 1; // Left
+		2'b11: next_y = player_y - 1; // Up
+	endcase
+	
 	if (eval_reg) begin
 		case(state_reg) 
 			STATE_READ: begin
 				state_next = STATE_WRITE;
 			end
-			STATE_WRITE: begin		
-				if(sram_buffer_reg > 0 && sram_buffer_reg < OBJECTIVE_VALUE) begin
+			STATE_WRITE: begin
+				if(x == player_x && y == player_y) begin
+					if(sram_buffer_reg > 1 && sram_buffer_reg != OBJECTIVE_VALUE) begin
+						state_next = STATE_NOP;
+						game_state_next = GAME_STATE_DEAD;
+					end else if(x == player_x && y == player_y) begin
+						write_next = 1;
+						sram_buffer_next = 1;
+					end
+				end else if(sram_buffer_reg > 0 && sram_buffer_reg < OBJECTIVE_VALUE) begin
 					write_next = 1;
 					sram_buffer_next = sram_buffer_reg + 1;
 					sram_buffer_next = sram_buffer_next % (player_length * 2 + 1);
-				end else if(x == player_x && y == player_y) begin
-					if((sram_buffer_reg == 0 || sram_buffer_reg == OBJECTIVE_VALUE )) begin
-						write_next = 1;
-						sram_buffer_next = 1;
-					end else 
-						game_state_next = GAME_STATE_DEAD;
 				end else if(sram_buffer_reg == 0 && x == objective_x && y == objective_y) begin
 					write_next = 1;
 					sram_buffer_next = OBJECTIVE_VALUE;
