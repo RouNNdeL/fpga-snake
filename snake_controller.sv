@@ -49,6 +49,7 @@ parameter STATE_WRITE2 = 3'b011;
 parameter STATE_NOP = 3'b100;
 
 parameter BORDER_VALUE = 16'hffff;
+parameter OBJECTIVE_VALUE = 16'hfffe;
 
 assign dbg = eval_reg;
 	
@@ -57,7 +58,15 @@ always @(posedge clk_1, posedge rst) begin
 			player_x <= 3;
 			player_y <= 3;
 			player_length <= 4;
+			objective_x <= 10;
+			objective_y <= 8;
 	end else begin
+		if(objective_x == player_x && objective_y == player_y) begin
+			player_length <= player_length + 1;
+			objective_x <= objective_x + 4;
+			objective_y <= objective_y + 4;
+		end
+		
 		case(mov_dir) 
 			2'b00: player_x <= player_x + 1; // Right
 			2'b01: player_y <= player_y + 1; // Down
@@ -106,16 +115,18 @@ always @* begin
 			STATE_READ: begin
 				state_next = STATE_WRITE;
 			end
-			STATE_WRITE: begin
-				if(sram_buffer_reg > 0 && sram_buffer_reg != BORDER_VALUE) begin
+			STATE_WRITE: begin		
+				if(sram_buffer_reg > 0 && sram_buffer_reg < OBJECTIVE_VALUE) begin
 					write_next = 1;
 					sram_buffer_next = sram_buffer_reg + 1;
 					sram_buffer_next = sram_buffer_next % (player_length * 2 + 1);
-				end 
-				else if(sram_buffer_reg == 0 && x == player_x && y == player_y) begin
+				end else if((sram_buffer_reg == 0 || sram_buffer_reg == OBJECTIVE_VALUE )&& x == player_x && y == player_y) begin
 					write_next = 1;
 					sram_buffer_next = 1;
-				end 
+				end else if(sram_buffer_reg == 0 && x == objective_x && y == objective_y) begin
+					write_next = 1;
+					sram_buffer_next = OBJECTIVE_VALUE;
+				end
 					
 				state_next = STATE_WRITE2;
 			end
@@ -125,24 +136,28 @@ always @* begin
 				state_next = STATE_NOP;
 			end
 			STATE_NOP: begin
-				if(sram_buffer_reg > 0 && sram_buffer_reg != BORDER_VALUE)
+				if(sram_buffer_reg > 0 && sram_buffer_reg < OBJECTIVE_VALUE)
 					entity_next = ENTITY_PLAYER;
 				else if(sram_buffer_reg == BORDER_VALUE)
 					entity_next = ENTITY_WALL;
-				else begin
+				else if(sram_buffer_reg == OBJECTIVE_VALUE)
+					entity_next = ENTITY_OBJECTIVE;
+				else 
 					entity_next = ENTITY_NONE;
-				end
 			end
 		endcase
 	end else begin
 		sram_buffer_next = sram_dq;
-		if(sram_buffer_reg > 0 && sram_buffer_reg != BORDER_VALUE)
+		if(sram_buffer_reg > 0 && sram_buffer_reg < OBJECTIVE_VALUE)
 			entity_next = ENTITY_PLAYER;
 		else if(sram_buffer_reg == BORDER_VALUE)
 			entity_next = ENTITY_WALL;
-		else begin
+		else if(sram_buffer_reg == BORDER_VALUE)
+			entity_next = ENTITY_WALL;
+		else if(sram_buffer_reg == OBJECTIVE_VALUE)
+			entity_next = ENTITY_OBJECTIVE;
+		else 	
 			entity_next = ENTITY_NONE;
-		end
 	end 
 end
 
