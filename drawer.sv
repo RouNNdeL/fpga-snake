@@ -20,7 +20,7 @@ reg [15:0] pixel_reg;
 
 assign pixel_data = pixel_reg;
 
-assign new_draw_clk60 = y == 100;
+assign new_draw_clk60 = y == 0;
 assign new_grid_clk = y[2:0] == 0 && x[2:0] == 2;
 
 reg [7:0] frame_counter;
@@ -36,7 +36,7 @@ reg dead_frame;
 reg [1:0] mov_dir;
 reg [1:0] last_mov_dir;
 
-assign dbg = {new_frame_clk1, frame_counter};
+assign dbg[1:0] = {new_frame_clk1, new_draw_clk60};
 
 //TODO: The (0, 0) pixel is black and blinks on frame refresh, findout why and fix
 
@@ -50,6 +50,18 @@ wire [1:0] state_next;
 parameter STATE_LATCH_PIXEL_DATA = 2'b00;
 parameter STATE_INCREMENT_CALC_CORDS = 2'b01;
 parameter STATE_NOP = 2'b11;
+
+wire [15:0] pixel_next_cord;
+wire [1:0] entity;
+
+always @* begin
+	case(entity) 
+		ENTITY_NONE: pixel_next_cord = BACKGROUND_COLOR;
+		ENTITY_PLAYER: pixel_next_cord = PLAYER_COLOR;
+		ENTITY_OBJECTIVE: pixel_next_cord = OBJECTIVE_COLOR;
+		ENTITY_WALL: pixel_next_cord = BORDER_COLOR_NORMAL;
+	endcase
+end
 
 always @* begin
 	pixel_next = pixel_reg;
@@ -120,11 +132,9 @@ end
 
 always @(posedge clk_vsync) begin
 	frame_counter <= frame_counter + 1;
-		if(frame_counter >= 15)
+		if(frame_counter >= 60)
 			frame_counter <= 0;
 end
-
-wire [15:0] pixel_next_cord;
 
 wire new_grid_clk_state = state == STATE_INCREMENT_CALC_CORDS;
 
@@ -139,7 +149,7 @@ snake_controller sc0(
 	.sram_dq(sram_dq), 
 	.sram_addr(sram_addr),
 	.write_enable(sram_we_n),
-	.entity_data(pixel_next_cord)
+	.entity_data(entity)
 );
 
 endmodule 

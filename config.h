@@ -6,3 +6,8 @@ parameter PLAYER_COLOR = 16'hde2;
 parameter OBJECTIVE_COLOR = 16'h7c00;
 parameter FONT_COLOR = 16'h0000;
 parameter BACKGROUND_COLOR = 16'b000010000100011;
+
+parameter ENTITY_NONE = 2'b00;
+parameter ENTITY_PLAYER = 2'b01;
+parameter ENTITY_OBJECTIVE = 2'b10;
+parameter ENTITY_WALL = 2'b11;

@@ -9,9 +9,11 @@ module snake_controller(
 	inout [15:0] sram_dq, 
 	output [17:0] sram_addr,
 	output write_enable,
-	output [15:0] entity_data,
-	output [7:0] dbg
+	output [1:0] entity_data,
+	output dbg
 );
+
+`include "config.h"
 
 reg [4:0] objective_x;
 reg [4:0] objective_y;
@@ -20,8 +22,8 @@ reg [4:0] player_x;
 reg [4:0] player_y;
 reg [9:0] player_length;
 
-wire [15:0] entity_next;
-reg [15:0] entity_reg;
+wire [1:0] entity_next;
+reg [1:0] entity_reg;
 
 wire write_next;
 reg write_reg;
@@ -48,13 +50,13 @@ parameter STATE_NOP = 3'b100;
 
 parameter BORDER_VALUE = 16'hffff;
 
-assign dbg = player_length;
+assign dbg = eval_reg;
 	
 always @(posedge clk_1, posedge rst) begin
 	if(rst) begin
 			player_x <= 3;
 			player_y <= 3;
-			player_length <= 40;
+			player_length <= 4;
 	end else begin
 		case(mov_dir) 
 			2'b00: player_x <= player_x + 1; // Right
@@ -106,45 +108,40 @@ always @* begin
 			end
 			STATE_WRITE: begin
 				if(sram_buffer_reg > 0 && sram_buffer_reg != BORDER_VALUE) begin
-					entity_next = 16'hde2;
 					write_next = 1;
-					sram_buffer_next = (sram_buffer_reg + 1) % (player_length + 1);
+					sram_buffer_next = sram_buffer_reg + 1;
+					sram_buffer_next = sram_buffer_next % (player_length * 2 + 1);
 				end 
 				else if(sram_buffer_reg == 0 && x == player_x && y == player_y) begin
-					entity_next = 16'hde2;
 					write_next = 1;
 					sram_buffer_next = 1;
 				end 
-				else begin
-					entity_next = 0;
-				end
 					
 				state_next = STATE_WRITE2;
 			end
 			STATE_WRITE2: begin
-				entity_next = entity_reg;
 				sram_buffer_next = sram_buffer_reg;
 				write_next = 1;
 				state_next = STATE_NOP;
 			end
 			STATE_NOP: begin
 				if(sram_buffer_reg > 0 && sram_buffer_reg != BORDER_VALUE)
-					entity_next = 16'hde2;
+					entity_next = ENTITY_PLAYER;
 				else if(sram_buffer_reg == BORDER_VALUE)
-					entity_next = 16'hffff;
+					entity_next = ENTITY_WALL;
 				else begin
-					entity_next = 0;
+					entity_next = ENTITY_NONE;
 				end
 			end
 		endcase
 	end else begin
 		sram_buffer_next = sram_dq;
 		if(sram_buffer_reg > 0 && sram_buffer_reg != BORDER_VALUE)
-			entity_next = 16'hde2;
+			entity_next = ENTITY_PLAYER;
 		else if(sram_buffer_reg == BORDER_VALUE)
-			entity_next = 16'hffff;
+			entity_next = ENTITY_WALL;
 		else begin
-			entity_next = 0;
+			entity_next = ENTITY_NONE;
 		end
 	end 
 end

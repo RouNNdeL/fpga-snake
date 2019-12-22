@@ -6,6 +6,7 @@ module main(
 	input [3:0] KEY,
 	output [8:0] LEDG,
 	output [17:0] LEDR,
+	output [2:0] GPIO_0,
 	
 	inout [15:0] SRAM_DQ,
 	output [17:0] SRAM_ADDR,
@@ -63,7 +64,6 @@ VGA_Controller		u1	(	//	Host Side
 							//	Control Signal
 							.iCLK(vga_clk_252_90deg),
 							.iRST_N(~resetVGA)	);
-
 wire [7:0] debug;
 wire [15:0] pixel_buffer;
 
@@ -82,6 +82,7 @@ drawer d0 (
 	.dbg(debug)
 );
 
+assign GPIO_0 = debug[2:0];
 
 
 assign LEDG = {~SRAM_WE_N, debug};
