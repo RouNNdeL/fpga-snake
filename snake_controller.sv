@@ -64,12 +64,12 @@ always @(posedge clk_1, posedge rst) begin
 			player_y <= 3;
 			player_length <= 4;
 			objective_x <= 10;
-			objective_y <= 8;
+			objective_y <= 7;
 	end else begin
 		if(objective_x == player_x && objective_y == player_y) begin
 			player_length <= player_length + 1;
-			objective_x <= objective_x + 4;
-			objective_y <= objective_y + 4;
+			objective_x <= (objective_x + 8) % 28 + 1;
+			objective_y <= (objective_y + 25) % 28 + 1;
 		end
 		
 		player_x <= next_x;
