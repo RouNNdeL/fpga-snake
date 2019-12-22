@@ -10,6 +10,7 @@ module snake_controller(
 	output [17:0] sram_addr,
 	output write_enable,
 	output [1:0] entity_data,
+	output [1:0] game_state,
 	output dbg
 );
 
@@ -25,6 +26,9 @@ reg [9:0] player_length;
 wire [1:0] entity_next;
 reg [1:0] entity_reg;
 
+reg [1:0] game_state_reg;
+reg [1:0] game_state_next;
+
 wire write_next;
 reg write_reg;
 
@@ -33,6 +37,7 @@ assign sram_dq = write_reg ? sram_buffer_reg : 16'hzzzz;
 
 assign sram_addr = {x, y};
 assign entity_data = entity_reg;
+assign game_state = game_state_reg;
 
 wire [3:0] state_next;
 reg [3:0] state_reg;
@@ -81,6 +86,7 @@ always @(posedge clk_25_2, posedge rst) begin
 	if(rst) begin
 		write_reg <= 1;
 		sram_buffer_reg <= 16'h0;
+		game_state_reg <= GAME_STATE_ALIVE;
 		if(x == 0)
 			sram_buffer_reg <= BORDER_VALUE;
 		if(y == 0 && x < 30)
@@ -98,6 +104,8 @@ always @(posedge clk_25_2, posedge rst) begin
 			state_reg <= STATE_READ;
 		else 
 			state_reg <= state_next;
+			
+		game_state_reg <= game_state_next;
 		entity_reg <= entity_next;
 		sram_buffer_reg <= sram_buffer_next;
 		write_reg <= write_next;
@@ -109,6 +117,7 @@ always @* begin
 	sram_buffer_next = sram_dq;
 	write_next = 0;
 	entity_next = entity_reg;
+	game_state_next = game_state_reg;
 	
 	if (eval_reg) begin
 		case(state_reg) 
@@ -120,13 +129,16 @@ always @* begin
 					write_next = 1;
 					sram_buffer_next = sram_buffer_reg + 1;
 					sram_buffer_next = sram_buffer_next % (player_length * 2 + 1);
-				end else if((sram_buffer_reg == 0 || sram_buffer_reg == OBJECTIVE_VALUE )&& x == player_x && y == player_y) begin
-					write_next = 1;
-					sram_buffer_next = 1;
+				end else if(x == player_x && y == player_y) begin
+					if((sram_buffer_reg == 0 || sram_buffer_reg == OBJECTIVE_VALUE )) begin
+						write_next = 1;
+						sram_buffer_next = 1;
+					end else 
+						game_state_next = GAME_STATE_DEAD;
 				end else if(sram_buffer_reg == 0 && x == objective_x && y == objective_y) begin
 					write_next = 1;
 					sram_buffer_next = OBJECTIVE_VALUE;
-				end
+				end 
 					
 				state_next = STATE_WRITE2;
 			end

@@ -71,6 +71,7 @@ drawer d0 (
 	.clk(vga_clk_252), 
 	.x(Coord_X[9:1]), 
 	.y(Coord_Y[9:1]),
+	.game_settings(SW[17:16]),
 	.clk_vsync(VGA_VS),
 	.mov(~KEY),
 	.rst(reset), 

@@ -11,3 +11,8 @@ parameter ENTITY_NONE = 2'b00;
 parameter ENTITY_PLAYER = 2'b01;
 parameter ENTITY_OBJECTIVE = 2'b10;
 parameter ENTITY_WALL = 2'b11;
+
+parameter GAME_STATE_ALIVE = 2'b00;
+parameter GAME_STATE_DEAD = 2'b01;
+parameter GAME_STATE_TODO1 = 2'b10;
+parameter GAME_STATE_TODO2 = 2'b11;
