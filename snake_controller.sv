@@ -81,8 +81,8 @@ reg [9:0] randomX;
 
 always @(posedge clk_1, posedge rst) begin
 	if(rst) begin
-			player_x <= 3;
-			player_y <= 3;
+			player_x <= 14;
+			player_y <= 14;
 			player_length <= 4;
 			objective_x <= (randomX) % 28 + 1;
 			objective_y <= (randomY) % 28 + 1;
@@ -195,7 +195,7 @@ always @* begin
 					entity_next = ENTITY_PLAYER;
 				else if(sram_buffer_reg == BORDER_VALUE)
 					entity_next = ENTITY_WALL;
-				else if(sram_buffer_reg == OBJECTIVE_VALUE)
+				else if(sram_buffer_reg == OBJECTIVE_VALUE && game_running)
 					entity_next = ENTITY_OBJECTIVE;
 				else 
 					entity_next = ENTITY_NONE;
@@ -209,7 +209,7 @@ always @* begin
 			entity_next = ENTITY_WALL;
 		else if(sram_buffer_reg == BORDER_VALUE)
 			entity_next = ENTITY_WALL;
-		else if(sram_buffer_reg == OBJECTIVE_VALUE)
+		else if(sram_buffer_reg == OBJECTIVE_VALUE && game_running)
 			entity_next = ENTITY_OBJECTIVE;
 		else 	
 			entity_next = ENTITY_NONE;
