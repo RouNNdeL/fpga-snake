@@ -7,6 +7,7 @@ module drawer (
 	input [8:0] x,
 	input [8:0] y,
 	input clk_vsync,
+	input game_start,
 	output wire [15:0] pixel_data,
 	inout [15:0] sram_dq, 
 	output [17:0] sram_addr,
@@ -153,7 +154,8 @@ snake_controller sc0(
 	.sram_addr(sram_addr),
 	.write_enable(sram_we_n),
 	.entity_data(entity),
-	.game_state(game_state)
+	.game_state(game_state),
+	.game_start(game_start)
 );
 
 endmodule 

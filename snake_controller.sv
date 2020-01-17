@@ -6,7 +6,8 @@ module snake_controller(
 	input [5:0] x,
 	input [5:0] y,
 	input [1:0] mov_dir,
-	inout [15:0] sram_dq, 
+	input game_start,
+	inout [15:0] sram_dq,
 	output [17:0] sram_addr,
 	output write_enable,
 	output [1:0] entity_data,
@@ -57,24 +58,46 @@ parameter BORDER_VALUE = 16'hffff;
 parameter OBJECTIVE_VALUE = 16'hfffe;
 
 assign dbg = eval_reg;
-	
+
+random10 r0Y(
+	.clk(clk_25_2),
+	.rst(seed_rst),
+	.seed(seed_counter),
+	.out(randomY)
+);
+
+random10 r0X(
+	.clk(clk_25_2),
+	.rst(seed_rst),
+	.seed(seed_counter + 200),
+	.out(randomX)
+);
+
+reg game_running;
+reg seed_rst;
+reg [31:0] seed_counter;
+reg [9:0] randomY;
+reg [9:0] randomX;
+
 always @(posedge clk_1, posedge rst) begin
 	if(rst) begin
 			player_x <= 3;
 			player_y <= 3;
 			player_length <= 4;
-			objective_x <= 10;
-			objective_y <= 7;
+			objective_x <= (randomX) % 28 + 1;
+			objective_y <= (randomY) % 28 + 1;
 	end else begin
-		if(objective_x == player_x && objective_y == player_y) begin
-			player_length <= player_length + 1;
-			objective_x <= (objective_x + 8) % 28 + 1;
-			objective_y <= (objective_y + 25) % 28 + 1;
-		end
+		if(game_running) begin
+			if(objective_x == player_x && objective_y == player_y) begin
+				player_length <= player_length + 1;
+				objective_x <= (randomX) % 28 + 1;
+				objective_y <= (randomY) % 28 + 1;
+			end
 		
-		player_x <= next_x;
-		player_y <= next_y;
-		//player_length <= player_length + 1;
+			player_x <= next_x;
+			player_y <= next_y;
+			//player_length <= player_length + 1;
+		end
 	end
 end 
 	
@@ -83,6 +106,7 @@ always @(posedge clk_25_2, posedge rst) begin
 		write_reg <= 1;
 		sram_buffer_reg <= 16'h0;
 		game_state_reg <= GAME_STATE_ALIVE;
+		game_running <= 0;
 		if(x == 0)
 			sram_buffer_reg <= BORDER_VALUE;
 		if(y == 0 && x < 30)
@@ -105,6 +129,14 @@ always @(posedge clk_25_2, posedge rst) begin
 		entity_reg <= entity_next;
 		sram_buffer_reg <= sram_buffer_next;
 		write_reg <= write_next;
+		seed_counter <= seed_counter + 1;
+		if(game_start && !game_running) begin
+			seed_rst <= 1;
+			game_running <= 1;
+		end
+		if(seed_rst) begin
+			seed_rst <= 0;
+		end
 	end
 end
 

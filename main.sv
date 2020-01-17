@@ -80,7 +80,8 @@ drawer d0 (
 	.sram_dq(SRAM_DQ),
 	.sram_addr(SRAM_ADDR),
 	.sram_we_n(SRAM_WE_N),
-	.dbg(debug)
+	.dbg(debug),
+	.game_start(SW[15])
 );
 
 assign GPIO_0 = debug[2:0];
