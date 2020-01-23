@@ -147,7 +147,7 @@ snake_controller sc0(
 	.clk_1(~dead & new_frame_clk1),
 	.clk_grid(new_grid_clk),
 	.rst(rst_snake),
-	.x(grid_x_calc),
+	.x(grid_x_calc-5),
 	.y(grid_y_calc),
 	.mov_dir(mov_dir),
 	.sram_dq(sram_dq), 
