@@ -6,7 +6,7 @@ module main(
 	input [3:0] KEY,
 	output [8:0] LEDG,
 	output [17:0] LEDR,
-	output [2:0] GPIO_0,
+	input [5:0] GPIO_0,
 	
 	inout [15:0] SRAM_DQ,
 	output [17:0] SRAM_ADDR,
@@ -73,19 +73,16 @@ drawer d0 (
 	.y(Coord_Y[9:1]),
 	.game_settings(SW[17:16]),
 	.clk_vsync(VGA_VS),
-	.mov(~KEY),
+	.mov(GPIO_0[3:0]),
 	.rst(reset), 
-	.rst_snake(SW[2]),
+	.rst_snake(SW[2] || GPIO_0[5]),
 	.pixel_data(pixel_buffer),
 	.sram_dq(SRAM_DQ),
 	.sram_addr(SRAM_ADDR),
 	.sram_we_n(SRAM_WE_N),
 	.dbg(debug),
-	.game_start(SW[15])
+	.game_start(SW[15] || GPIO_0[4])
 );
-
-assign GPIO_0 = debug[2:0];
-
 
 assign LEDG = {~SRAM_WE_N, debug};
 assign LEDR = SRAM_DQ;
